@@ -1,0 +1,18 @@
+# The nginx config frags stands for a web app which will included by a virtal host named as first section of the filename
+# this file will included by website.conf under /etc/nginx/conf.d/
+
+location /tarball-repo/ {
+  
+  root /var/website/;
+
+  location /tarball-repo/cgi-bin/ {
+    gzip off;
+    autoindex off;
+    fastcgi_pass unix:/var/run/fcgiwrap.socket;
+    include /etc/nginx/fastcgi_params;
+  }
+
+  location /tarball-repo/downloads/ {
+    autoindex on;
+  }
+}
