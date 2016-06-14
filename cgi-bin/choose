@@ -1,0 +1,25 @@
+#!/bin/bash
+. ./conf.sh
+
+downloads_loc="$(pwd)/../downloads"
+script_loc="$(pwd)/choose.d"
+
+downloads_baseurl=/
+
+for i in $script_loc/*.sh; do
+if [ -r $i ]; then
+  . $i
+fi
+done
+
+
+
+echo "Content-type:text/html"
+echo ""
+echo "$downloads_loc"
+echo "$QUERY_STRING"
+echo "$tarball_jdk"
+echo "$tarball_maven"
+echo "$tarball_tomcat"
+
+

@@ -1,0 +1,72 @@
+= bash-tarball-repo
+
+== Introduce
+If there are lots of servers you need to install java, maven, tomcat, etc, every download
+from the origin website is very time-consuming, only one copy in a resource server in locale
+netwrok is ideal.
+
+The simple project use nginx, fcgiwrap, bash script to setup a simple website which hold
+the tarballs for downloading.
+
+== installation
+bash-tarball-repo can be installed on any directoy, the default configuration use `/var/website/tarball-repo`.
+If use another directory, change `root` configration in bash-tarball-repo.conf.
+
+ # apt-get install nginx
+ # apt-get install fcgiwrap
+ # service nginx start
+ # service fcgiwrap start
+
+ # makedir -p /var/website
+ # cd /var/website
+ # git clone https://github.com/redmark/tarball-repo.git
+ # ln -s `pwd`/tarball-repo/bash-tarball-repo.conf /etc/nginx/conf.d/
+
+download tarball to downloads directory
+
+== client access url
+
+ curl http://some.web.site/choose?java
+ curl http://some.web.site/choose?maven
+ curl http://some.web.site/choose?tomcat
+
+detail usage see section cgi-bin/choose
+
+== folder structure
+    .
+    ├── cgi-bin
+    │   ├── choose
+    │   └── choose.d
+    │       ├── jdk.sh
+    │       ├── maven.sh
+    │       └── tomcat.sh
+    ├── downloads
+    ├── bash-tarball-repo.conf
+    └── README.adoc
+
+=== cgi-bin/choose
+It's the main executable bash script which will be executed when `/choose?_name_=_version_` is accessed by client.
+It redirect to download url of the latest tarballs on the server.
+
+* if no version ,the latest one will be used
+
+ /choose?jdk                 the latest jdk
+ /choose?maven               the latest maven
+ /choose?tomcat              the latest tomcat
+
+* with version
+
+ /choose?maven=3.3.9         maven 3.3.9
+
+* the version can be partial one, e.g.
+
+ /choose?java=7              the latest jdk7, even if jdk8 is in the download directory
+
+=== cgi-bin/latest.d/
+directory contains the shell scripts sourced by latest bash script,
+
+=== downloads/
+contains the tarball downloaded from origin website.
+
+=== bash-tarball-repo.conf
+this is a nginx conf, cp it to /etc/ngxin/conf.d/
