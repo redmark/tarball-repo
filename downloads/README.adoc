@@ -1,1 +1,3 @@
-tarball directory
+= tarball directory
+
+please use the origin name of these tarball on their official website
