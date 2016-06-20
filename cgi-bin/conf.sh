@@ -18,11 +18,19 @@ APP_PATH=$APP_PATH
 # all bash cgi script must use this variable to locate resources on file system
 APP_DIR=$DOCUMENT_ROOT$APP_PATH
 
-
-# the BASE URL of the app
 if [[ ${SERVER_PORT} != 80 ]]; then
   PORT_STRING=:${SERVER_PORT}
 fi
+
+if [[ -z $REQUEST_SCHEME ]]; then
+  if [[ $HTTPS = "on" ]]; then
+    REQUEST_SCHEME="https"
+  else
+    REQUEST_SCHEME="http"
+  fi
+fi
+
+# the BASE URL of the app
 APP_URL=${REQUEST_SCHEME}://${HTTP_HOST}${PORT_STRING}$APP_PATH
 
 # a part of uri of followed APP_PATH, a bit like getServletPath in servlet
