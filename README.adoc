@@ -2,8 +2,7 @@
 
 == Introduce
 If there are lots of servers you need to install java, maven, tomcat, etc, every download
-from the origin website is very time-consuming, only one copy in a resource server in local
-network is ideal.
+from the origin website is very time-consuming, setup a copy in a resource server in local network is ideal for downloading by others.
 
 The simple project use nginx, fcgiwrap, bash script to setup a simple website which hold
 the tarballs for downloading.
