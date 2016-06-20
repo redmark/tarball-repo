@@ -1,25 +1,58 @@
 #!/bin/bash
+ exec 2>&1
+
+################################ V ##############################
+function view_success() {
+    echo "Status:302"
+    echo "Location:${downloads_url}"
+    echo "Content-type:text/html"
+    echo "Cache-Control: no-cache, no-store, must-revalidate"
+    echo "Pragma: no-curcache"
+    echo "Expires: 0"
+    echo ""
+}
+
+function view_failed() {
+    echo "Status:${1} ${2}"
+    echo "Content-type:text/html"
+    echo ""
+}
+
+#################################################################
+#################################################################
 . ./conf.sh
 
-downloads_loc="$(pwd)/../downloads"
-script_loc="$(pwd)/choose.d"
+downloads_dir="${APP_DIR}/downloads"
+scripts_dir="${APP_DIR}/cgi-bin/choose.d"
+downloads_baseurl="${APP_URL}/downloads"
 
-downloads_baseurl=/
-
-for i in $script_loc/*.sh; do
-if [ -r $i ]; then
-  . $i
+request_tarball_name=${PARAM_NANES[0]}
+if [[ -z $request_tarball_name ]]; then # key of associate array cannot be empty
+  view_failed 400
+  exit
 fi
-done
+request_tarball_version=${PARAM[$request_tarball_name]}
 
+tarball_name=""
+case $request_tarball_name in
+    jdk | java )
+        . $scripts_dir/jdk.sh
+        ;;
+    maven )
+        . $scripts_dir/maven.sh
+        ;;
+    tomcat )
+        . $scripts_dir/tomcat.sh
+        ;;
+    * )
+        view_failed 400
+        exit
+        ;;
+esac
 
-
-echo "Content-type:text/html"
-echo ""
-echo "$downloads_loc"
-echo "$QUERY_STRING"
-echo "$tarball_jdk"
-echo "$tarball_maven"
-echo "$tarball_tomcat"
-
-
+if [[ ! -z $tarball_name ]]; then
+    downloads_url=${downloads_baseurl}/${tarball_name}
+    view_success
+else
+    view_failed 404
+fi

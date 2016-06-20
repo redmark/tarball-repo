@@ -1,1 +1,1 @@
-tarball_maven=$(ls ${download_loc}/apache-maven-*.tar.gz)
+tarball_name=$(ls $downloads_dir | egrep "^apache-maven-${request_tarball_version}.*\.tar\.gz$" | sort -r | head -1)

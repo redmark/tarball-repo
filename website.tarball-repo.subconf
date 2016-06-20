@@ -1,8 +1,8 @@
-# The nginx config frags stands for a web app which will included by a virtal host named as first section of the filename
+# The nginx config frags stands for a web app which will included by a virtual host named as first section of the filename
 # this file will included by website.conf under /etc/nginx/conf.d/
 
 location /tarball-repo/ {
-  
+
   root /var/website/;
 
   location /tarball-repo/cgi-bin/ {
@@ -10,9 +10,17 @@ location /tarball-repo/ {
     autoindex off;
     fastcgi_pass unix:/var/run/fcgiwrap.socket;
     include /etc/nginx/fastcgi_params;
+    fastcgi_param APP_PATH /tarball-repo; # custom variable pass to fcgi which represents app path in uri , a bit like contexpath in j2ee
   }
 
   location /tarball-repo/downloads/ {
     autoindex on;
+
+    # for wget and curl to save with the filename
+    # curl -J , wget --content-disposition
+    if ($request_filename ~ "^.*/(.+\.(zip|tgz|iso|gz))$"){
+        set $fname $1;
+        add_header Content-Disposition 'attachment; filename="$fname"';
+    }
   }
 }

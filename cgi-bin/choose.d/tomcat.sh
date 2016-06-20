@@ -1,1 +1,1 @@
-tarball_tomcat=$(ls ${download_loc}/apache-tomcat-*.tar.gz)
+tarball_name=$(ls $downloads_dir | egrep "^apache-tomcat-${request_tarball_version}.*\.tar\.gz$" | sort -r | head -1)
