@@ -1,74 +1,117 @@
 = tarball-repo
 
 == Introduce
-If there are lots of servers you need to install java, maven, tomcat, etc, every download
-from the origin website is very time-consuming, setup a copy in a resource server in local network is ideal for downloading by others.
+If there are lots of servers you need to install java, maven, tomcat, every
+download from the origin website is very time-consuming. Download just one copy
+in a resource server in local network is ideal for downloading by another.
 
-The simple project use nginx, fcgiwrap, bash script to setup a simple website which hold
-the tarballs for downloading.
+The simple project use nginx, spawn-fcgi, fcgiwrap, bash script to setup a
+simple website which hold the tarballs for downloading.
 
 == Installation
-tarball-repo can be installed on any directory, the default configuration use `/var/website/tarball-repo`.
-If use another directory, see details in website.conf and website.tarball-repo.subconf
+The tarball-repo can be installed on any directory, the default configuration
+use `/var/website/tarball-repo`. If another directory is prefered, see details
+in website.conf and website.tarball-repo.subconf
 
- # apt-get install nginx
- # apt-get install fcgiwrap
+=== Install spawn-fcgi & fcgiwrap
+==== package installation
+.Ubuntu
+----
+$ sudo apt-get install nginx
+$ sudo apt-get install fcgiwrap
+----
+==== manually installation
+.Centos
+----
+$ sudo yum install epel-release   #<1>
+$ sudo yum install fcgi-devel     #<2>
+$ sudo yum install spawn-fcgi     #<3>
 
- # mkdir -p /var/website
- # cd /var/website
- # git clone https://github.com/redmark/tarball-repo.git
- # ln -s `pwd`/tarball-repo/website.conf /etc/nginx/conf.d/
- # ln -s `pwd`/tarball-repo/website.tarball-repo.subconf/etc/nginx/conf.d/
+$ git clone git://github.com/gnosek/fcgiwrap.git
+$ cd fcgiwrap
+$ autoreconf -i
+$ ./configure
+$ make
+$ sudo make install               #<4>
 
-download tarballs from their official website to downloads directory
+$ vim /etc/sysconfig/spawn-fcgi
+  SOCKET=/var/run/fcgiwrap.socket
+  OPTIONS="-P /var/run/fcgiwrap.pid -F 1 -s $SOCKET -u nginx -U nginx -g nginx -G nginx -- /usr/local/sbin/fcgiwrap -f"
+
+$ sudo service spawn-fcgi start
+$ sudo service nginx start        #<5>
+
+----
+<1> `spawn-fcgi` is in epel
+<2> fcgi-devel is needed when compile fgiwrap
+<3> Centos need spawn-fcgi to start fcgiwrap. spawn-fcgi will install `/etc/init.d/spawn-fcgi` and `/etc/sysconfig/spawn-fcgi`.
+<4> copy to `/usr/local/sbin/fcgiwrap`
+<5> If install on Centos7, disable selinux or config it, please refer https://www.digitalocean.com/community/tutorials/an-introduction-to-selinux-on-centos-7-part-1-basic-concepts
+
+.ubuntu
+----
+$ sudo apt-get install pkg-config
+$ sudo apt-get install libfcgi-dev
+$ sudo apt-get install spawn-fcgi
+----
+same as centos to compile, and write a init script in /etc/init.d/
+
+=== install tarball-repo
+----
+# mkdir -p /var/website
+# cd /var/website
+# git clone https://github.com/redmark/tarball-repo.git
+# ln -s `pwd`/tarball-repo/website.conf /etc/nginx/conf.d/
+# ln -s `pwd`/tarball-repo/website.tarball-repo.subconf /etc/nginx/conf.d/
+----
+* disable nginx default server, e.g. on ubuntu 14 nginx 1.4.6 `remove /etc/nginx/sites-enabled/default`  +
+* download tarballs from their official website to `downloads` directory
 
 == Client access url
-detail usage see section cgi-bin/choose
-
- wget --content-disposition http://some.web.site/tarball-repo/cgi-bin/choose?java
- wget --content-disposition http://some.web.site/tarball-repo/cgi-bin/choose?maven=3.3.3
- wget --content-disposition http://some.web.site/tarball-repo/cgi-bin/choose?tomcat=8.5
- curl -L -J -O http://some.web.site/tarball-repo/cgi-bin/choose?tomcat=8.5
-
-show all downloads  tarballs
-
+.detail usage see section cgi-bin/choose
+----
+wget --content-disposition http://some.web.site/tarball-repo/cgi-bin/choose?java
+wget --content-disposition http://some.web.site/tarball-repo/cgi-bin/choose?maven=3.3.3
+wget --content-disposition http://some.web.site/tarball-repo/cgi-bin/choose?tomcat=8.5
+curl -L -J -O http://some.web.site/tarball-repo/cgi-bin/choose?tomcat=8.5
+----
+.show all downloads  tarballs
  curl http://some.web.site/tarball-repo/downloads/
 
-
 == Structure
- .
- ├── cgi-bin
- │   ├── choose
- │   ├── choose.d
- │   │   ├── jdk.sh
- │   │   ├── maven.sh
- │   │   └── tomcat.sh
- │   └─── conf.sh
- ├── downloads
- │   └── README.adoc
- ├── LICENSE
- ├── README.adoc
- ├── website.conf
- └── website.tarball-repo.subconf
-
+----
+.
+├── cgi-bin
+│   ├── choose
+│   ├── choose.d
+│   │   ├── jdk.sh
+│   │   ├── maven.sh
+│   │   └── tomcat.sh
+│   └─── conf.sh
+├── downloads
+│   └── README.adoc
+├── LICENSE
+├── README.adoc
+├── website.conf
+└── website.tarball-repo.subconf
+----
 
 === cgi-bin/choose
 It's the main executable bash script which will be executed when `/tarball-repo/cgi-bin/choose?_name_=_version_` is accessed by client.
 It redirect to download url of the latest tarballs on the server.
 
-* if no version ,the latest one will be used
+.if no version ,the latest one will be used
+----
+/tarball-repo/cgi-bin/choose?jdk                 the latest jdk
+/tarball-repo/cgi-bin/choose?maven               the latest maven
+/tarball-repo/cgi-bin/choose?tomcat              the latest tomcat
+----
 
- /tarball-repo/cgi-bin/choose?jdk                 the latest jdk
- /tarball-repo/cgi-bin/choose?maven               the latest maven
- /tarball-repo/cgi-bin/choose?tomcat              the latest tomcat
-
-* with version
-
+.with version
  /tarball-repo/cgi-bin/choose?maven=3.3.9         maven 3.3.9
 
-* the version can be partial one, e.g.
-
- /tarball-repo/cgi-bin/choose?java=7              the latest jdk7, even if jdk8 is in the download directory
+.the version can be partial one
+ /tarball-repo/cgi-bin/choose?java=7              the latest jdk7, even though jdk8 is in the download directory
 
 === conf.sh
 set some custom variable & function, see comments in the file
