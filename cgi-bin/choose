@@ -44,6 +44,9 @@ case $request_tarball_name in
     tomcat )
         . $scripts_dir/tomcat.sh
         ;;
+    gradle )
+        . $scripts_dir/gradle.sh
+        ;;
     * )
         view_failed 400
         exit
