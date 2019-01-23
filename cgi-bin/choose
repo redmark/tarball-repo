@@ -7,7 +7,7 @@ function view_success() {
     echo "Location:${downloads_url}"
     echo "Content-type:text/html"
     echo "Cache-Control: no-cache, no-store, must-revalidate"
-    echo "Pragma: no-curcache"
+    echo "Pragma: no-cache"
     echo "Expires: 0"
     echo ""
 }
