@@ -38,6 +38,9 @@ case $request_tarball_name in
     jdk | java )
         . $scripts_dir/jdk.sh
         ;;
+    ojdk | ojava )
+        . $scripts_dir/ojdk.sh
+        ;;
     maven )
         . $scripts_dir/maven.sh
         ;;
