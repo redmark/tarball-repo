@@ -39,7 +39,7 @@ case $request_tarball_name in
         . $scripts_dir/jdk.sh
         ;;
     ojdk | ojava )
-        . $scripts_dir/ojdk.sh
+        . $scripts_dir/openjdk.sh
         ;;
     maven )
         . $scripts_dir/maven.sh
